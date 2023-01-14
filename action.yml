@@ -1,11 +1,31 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Discord Mod File Uploader'
+description: 'Automated Minecraft mod file upload to a Discord channel.'
+author: 'Compact Mods'
 inputs:
-  milliseconds: # change this
+  filename:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Mod filename to upload to channel.'
+
+  channel:
+    required: true
+    description: 'Discord channel ID to make announcement in.'
+
+  modName:
+    required: true
+    description: 'User-friendly display name for the mod'
+
+  modVersion:
+    required: true
+    description: 'Version number of the mod for display'
+
+  mcVersion:
+    required: false
+    description: 'If set, shows a Minecraft version requirement in the metadata area'
+  
+  forgeVersion:
+    required: false
+    description: 'If set, shows a Forge version requirement in the metadata area'
 runs:
   using: 'node16'
   main: 'dist/index.js'
+

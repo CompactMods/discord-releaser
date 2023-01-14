@@ -1,16 +1,37 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import { DiscordModFileUploader, ModFileMetadata } from './discord'
+import { stat } from "fs/promises";
+import { Stats } from 'fs';
 
 async function run(): Promise<void> {
+  const filename: string = core.getInput('filename');
+  const channelId: string = core.getInput('channel');
+  
+  let fileStats: Stats;
+  try { fileStats = await stat(filename); }
+  catch { 
+    core.error("File not found; cannot continue.");
+    core.setFailed("Error reading file stats.");
+    return;
+  }
+  
+  const meta: ModFileMetadata = {
+    modName: core.getInput("modName", { required: true }),
+    modVersion: core.getInput("modVersion", { required: true }),
+    fileSize: `${fileStats.size / (1024 * 1000)} MB`,
+    
+    mcVersion: core.getInput("mcVersion"),
+    forgeVersion: core.getInput("forgeVersion")
+  };
+  
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    core.debug(`Sending information about file ${filename} to ${channelId} ...`);
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    await DiscordModFileUploader.forFile(filename)
+      .channel(channelId)
+      .metadata(meta)
+      .send(process.env.DISCORD_UPLOADER_TOKEN!);
 
-    core.setOutput('time', new Date().toTimeString())
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
