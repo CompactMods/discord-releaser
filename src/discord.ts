@@ -37,41 +37,48 @@ export class DiscordModFileUploader {
             throw new Error("No mod metadata defined.");
 
         this.targetChannel = this.client.channels.cache.get(this.targetChannelId);
-
-        // Emoji
-
         if (!(this.targetChannel instanceof BaseGuildTextChannel))
             return;
 
-        const target = this.targetChannel as BaseGuildTextChannel;
+        try {
+            const target = this.targetChannel as BaseGuildTextChannel;
 
-        let embedMeta: string[] = [];
-        if (this.modMetadata.mcVersion) {
-            let grass = this.client.emojis.cache.get("1063420847085322252");
-            embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
+            // Emoji
+            let embedMeta: string[] = [];
+            if (this.modMetadata.mcVersion) {
+                let grass = this.client.emojis.cache.get("1063420847085322252");
+                embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
+            }
+
+            if (this.modMetadata.forgeVersion) {
+                let forge = this.client.emojis.cache.get("1041688944586268683");
+                embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
+            }
+
+            // Build embed
+            let payload = new EmbedBuilder()
+                .setTitle("Mod File Information")
+                .setDescription(`Filename: ${inlineCode(this.filename)}\nFilesize: ${bold(this.modMetadata.fileSize)}`)
+                .setTimestamp()
+                .addFields({ name: '\u200b', value: embedMeta.join("\n") });
+
+            if (this.modThumbnail)
+                payload = payload.setThumbnail(this.modThumbnail)
+
+            // Yeet
+            await target.send({
+                content: bold(`New Version Available: ${this.modMetadata.modName} v${this.modMetadata.modVersion}`),
+                embeds: [payload],
+                files: [this.filename]
+            });
+
         }
 
-        if (this.modMetadata.forgeVersion) {
-            let forge = this.client.emojis.cache.get("1041688944586268683");
-            embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
+        catch (err) {
+            console.error(err);
         }
 
-        // Build embed
-        let payload = new EmbedBuilder()
-            .setTitle("Mod File Information")
-            .setDescription(`Filename: ${inlineCode(this.filename)}\nFilesize: ${bold(this.modMetadata.fileSize)}`)
-            .setTimestamp()
-            .addFields({ name: '\u200b', value: embedMeta.join("\n") });
-
-        if (this.modThumbnail)
-            payload = payload.setThumbnail(this.modThumbnail)
-
-        // Yeet
-        await target.send({
-            content: bold(`New Version Available: ${this.modMetadata.modName} v${this.modMetadata.modVersion}`),
-            embeds: [payload],
-            files: [this.filename]
-        });
+        this.client.destroy();
     }
 
     static forFile(filename: string): DiscordModFileUploader {
@@ -79,7 +86,7 @@ export class DiscordModFileUploader {
     }
 
     public channel(chan: string): DiscordModFileUploader {
-        this.targetChannel = this.client.channels.cache.get(chan);
+        this.targetChannelId = chan;
         return this;
     }
 
@@ -88,9 +95,13 @@ export class DiscordModFileUploader {
         return this;
     }
 
+    public thumbnail(thumbnail: string): DiscordModFileUploader {
+        this.modThumbnail = thumbnail;
+        return this;
+    }
+
     async send(token: string) {
-        this.client.once(Events.ClientReady, this.onConnected);
+        this.client.once(Events.ClientReady, this.onConnected.bind(this));
         await this.client.login(token);
-        this.client.destroy();
     }
 }

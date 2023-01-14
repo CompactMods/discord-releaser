@@ -1,6 +1,6 @@
 {
   "name": "discord-mod-uploader",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "description": "Automated Minecraft mod file upload to a Discord channel.",
   "main": "lib/main.js",
@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^18.11.0",
     "@vercel/ncc": "^0.31.1",
+    "dotenv": "^16.0.3",
     "jest": "^27.2.5",
     "js-yaml": "^4.1.0",
     "prettier": "2.5.1",

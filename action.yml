@@ -18,6 +18,10 @@ inputs:
     required: true
     description: 'Version number of the mod for display'
 
+  thumbnail:
+    required: false
+    description: 'If set, shows a thumbnail in the embed'
+
   mcVersion:
     required: false
     description: 'If set, shows a Minecraft version requirement in the metadata area'

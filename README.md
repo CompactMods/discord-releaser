@@ -1,9 +1,11 @@
 ## Inputs
 ```yaml
-uses: ./
+uses: compactmods/discord-releaser@0.1.2
+env:
+  DISCORD_BOT_TOKEN: <token>
 with:
   filename: examplemod-1.0.0.jar
-  channel: 1111111111111111111111111111111111111111111111111111111111111111
+  channel: <channel-id>
   modName: Example Mod
   modVersion: 1.0.0
   
