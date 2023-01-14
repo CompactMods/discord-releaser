@@ -23,8 +23,6 @@ class ModFileMetadata {
         this.modName = "Test Mod";
         this.modVersion = "1.0.0";
         this.fileSize = "1.0 MB";
-        this.mcVersion = "1.19.3";
-        this.forgeVersion = "44.1.0";
     }
 }
 exports.ModFileMetadata = ModFileMetadata;
@@ -43,47 +41,60 @@ class DiscordModFileUploader {
             if (!this.modMetadata)
                 throw new Error("No mod metadata defined.");
             this.targetChannel = this.client.channels.cache.get(this.targetChannelId);
-            // Emoji
-            let grass = this.client.emojis.cache.get("1063420847085322252");
-            let forge = this.client.emojis.cache.get("1041688944586268683");
             if (!(this.targetChannel instanceof discord_js_1.BaseGuildTextChannel))
                 return;
-            const target = this.targetChannel;
-            // Build embed
-            let payload = new discord_js_1.EmbedBuilder()
-                .setTitle("Mod File Information")
-                .setDescription(`Filename: ${(0, discord_js_1.inlineCode)(this.filename)}\nFilesize: ${(0, discord_js_1.bold)(this.modMetadata.fileSize)}`)
-                .setTimestamp()
-                .addFields({
-                name: '\u200b',
-                value: `${grass} - ${this.modMetadata.mcVersion}\n${forge} - ${this.modMetadata.forgeVersion}`
-            });
-            if (this.modThumbnail)
-                payload = payload.setThumbnail(this.modThumbnail);
-            // Yeet
-            yield target.send({
-                content: (0, discord_js_1.bold)(`New Version Available: ${this.modMetadata.modName} v${this.modMetadata.modVersion}`),
-                embeds: [payload],
-                files: [this.filename]
-            });
+            try {
+                const target = this.targetChannel;
+                // Emoji
+                let embedMeta = [];
+                if (this.modMetadata.mcVersion) {
+                    let grass = this.client.emojis.cache.get("1063420847085322252");
+                    embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
+                }
+                if (this.modMetadata.forgeVersion) {
+                    let forge = this.client.emojis.cache.get("1041688944586268683");
+                    embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
+                }
+                // Build embed
+                let payload = new discord_js_1.EmbedBuilder()
+                    .setTitle("Mod File Information")
+                    .setDescription(`Filename: ${(0, discord_js_1.inlineCode)(this.filename)}\nFilesize: ${(0, discord_js_1.bold)(this.modMetadata.fileSize)}`)
+                    .setTimestamp()
+                    .addFields({ name: '\u200b', value: embedMeta.join("\n") });
+                if (this.modThumbnail)
+                    payload = payload.setThumbnail(this.modThumbnail);
+                // Yeet
+                yield target.send({
+                    content: (0, discord_js_1.bold)(`New Version Available: ${this.modMetadata.modName} v${this.modMetadata.modVersion}`),
+                    embeds: [payload],
+                    files: [this.filename]
+                });
+            }
+            catch (err) {
+                console.error(err);
+            }
+            this.client.destroy();
         });
     }
     static forFile(filename) {
         return new DiscordModFileUploader(filename);
     }
     channel(chan) {
-        this.targetChannel = this.client.channels.cache.get(chan);
+        this.targetChannelId = chan;
         return this;
     }
     metadata(meta) {
         this.modMetadata = meta;
         return this;
     }
+    thumbnail(thumbnail) {
+        this.modThumbnail = thumbnail;
+        return this;
+    }
     send(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.client.once(discord_js_1.Events.ClientReady, this.onConnected);
+            this.client.once(discord_js_1.Events.ClientReady, this.onConnected.bind(this));
             yield this.client.login(token);
-            this.client.destroy();
         });
     }
 }
@@ -132,15 +143,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(42186));
 const discord_1 = __nccwpck_require__(25945);
+const promises_1 = __nccwpck_require__(69225);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        const filename = core.getInput('filename');
+        const channelId = core.getInput('channel');
+        let fileStats;
         try {
-            const filename = core.getInput('filename');
-            const channelId = core.getInput('channel');
+            fileStats = yield (0, promises_1.stat)(filename);
+        }
+        catch (_a) {
+            core.error("File not found; cannot continue.");
+            core.setFailed("Error reading file stats.");
+            return;
+        }
+        let thumbnail = core.getInput("thumbnail");
+        const meta = {
+            modName: core.getInput("modName", { required: true }),
+            modVersion: core.getInput("modVersion", { required: true }),
+            fileSize: `${fileStats.size / (1024 * 1000)} MB`,
+            mcVersion: core.getInput("mcVersion"),
+            forgeVersion: core.getInput("forgeVersion")
+        };
+        try {
             core.debug(`Sending information about file ${filename} to ${channelId} ...`);
-            yield discord_1.DiscordModFileUploader.forFile(filename)
+            var uploader = discord_1.DiscordModFileUploader.forFile(filename)
                 .channel(channelId)
-                .send(process.env.DISCORD_UPLOADER_TOKEN);
+                .metadata(meta);
+            if (thumbnail)
+                uploader = uploader.thumbnail(thumbnail);
+            yield uploader.send(process.env.DISCORD_BOT_TOKEN);
         }
         catch (error) {
             if (error instanceof Error)
@@ -78078,6 +78110,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 69225:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 
