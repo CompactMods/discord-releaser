@@ -159,10 +159,11 @@ function run() {
             return;
         }
         let thumbnail = core.getInput("thumbnail");
+        const fileSize = (fileStats.size / (1024 * 1000)).toFixed(2);
         const meta = {
             modName: core.getInput("modName", { required: true }),
             modVersion: core.getInput("modVersion", { required: true }),
-            fileSize: `${fileStats.size / (1024 * 1000)} MB`,
+            fileSize: `${fileSize} MB`,
             mcVersion: core.getInput("mcVersion"),
             forgeVersion: core.getInput("forgeVersion")
         };
