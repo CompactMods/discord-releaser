@@ -59,8 +59,10 @@ export class DiscordModFileUploader {
             let payload = new EmbedBuilder()
                 .setTitle("Mod File Information")
                 .setDescription(`Filename: ${inlineCode(this.filename)}\nFilesize: ${bold(this.modMetadata.fileSize)}`)
-                .setTimestamp()
-                .addFields({ name: '\u200b', value: embedMeta.join("\n") });
+                .setTimestamp();
+
+            if(embedMeta.length > 0)
+                payload = payload.addFields({ name: '\u200b', value: embedMeta.join("\n") });
 
             if (this.modThumbnail)
                 payload = payload.setThumbnail(this.modThumbnail)
