@@ -32,6 +32,15 @@ inputs:
   changelog:
     required: false
     description: 'If set, shows a changelog in the embed. If over 1000 characters, it attaches as a file.'
+  forge_emote:
+    required: false
+    description: 'If set, uses a different emoticon for forge version'
+    default: '1041688944586268683'
+  mc_emote:
+    required: false
+    description: 'If set, uses a different emoticon for minecraft version'
+    default: '1063420847085322252'
+
 runs:
   using: 'node16'
   main: 'dist/index.js'

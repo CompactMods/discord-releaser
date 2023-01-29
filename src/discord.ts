@@ -3,6 +3,7 @@ import {
     Channel, BaseGuildTextChannel,
     bold, inlineCode, AttachmentBuilder
 } from "discord.js";
+import * as core from '@actions/core'
 
 export class ModFileMetadata {
     public modName = "Test Mod";
@@ -48,12 +49,12 @@ export class DiscordModFileUploader {
             // Emoji
             let embedMeta: string[] = [];
             if (this.modMetadata.mcVersion) {
-                let grass = this.client.emojis.cache.get("1063420847085322252");
+                let grass = this.client.emojis.cache.get(core.getInput("mc_emote"));
                 embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
             }
 
             if (this.modMetadata.forgeVersion) {
-                let forge = this.client.emojis.cache.get("1041688944586268683");
+                let forge = this.client.emojis.cache.get(core.getInput("forge_emote"));
                 embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
             }
 
