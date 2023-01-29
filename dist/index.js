@@ -64,12 +64,24 @@ class DiscordModFileUploader {
                     payload = payload.addFields({ name: '\u200b', value: embedMeta.join("\n") });
                 if (this.modThumbnail)
                     payload = payload.setThumbnail(this.modThumbnail);
+                const uploadChangelog = this.modMetadata.changelog ? this.modMetadata.changelog.length > 1000 : false;
+                if (this.modMetadata.changelog) {
+                    if (!uploadChangelog)
+                        payload = payload.setDescription(`${this.modMetadata.changelog}\nFilename: ${(0, discord_js_1.inlineCode)(this.filename)}\nFilesize: ${(0, discord_js_1.bold)(this.modMetadata.fileSize)}`);
+                }
                 // Yeet
                 yield target.send({
                     content: (0, discord_js_1.bold)(`New Version Available: ${this.modMetadata.modName} v${this.modMetadata.modVersion}`),
                     embeds: [payload],
                     files: [this.filename]
                 });
+                if (uploadChangelog) {
+                    var attachment = new discord_js_1.AttachmentBuilder(Buffer.from(this.modMetadata.changelog, 'utf-8'));
+                    attachment = attachment.setName("CHANGELOG.md");
+                    yield target.send({
+                        files: [attachment]
+                    });
+                }
             }
             catch (err) {
                 console.error(err);
@@ -165,7 +177,8 @@ function run() {
             modVersion: core.getInput("modVersion", { required: true }),
             fileSize: `${fileSize} MB`,
             mcVersion: core.getInput("mcVersion"),
-            forgeVersion: core.getInput("forgeVersion")
+            forgeVersion: core.getInput("forgeVersion"),
+            changelog: core.getInput("changelog")
         };
         try {
             core.debug(`Sending information about file ${filename} to ${channelId} ...`);

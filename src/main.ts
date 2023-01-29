@@ -23,7 +23,8 @@ async function run(): Promise<void> {
     fileSize: `${fileSize} MB`,
 
     mcVersion: core.getInput("mcVersion"),
-    forgeVersion: core.getInput("forgeVersion")
+    forgeVersion: core.getInput("forgeVersion"),
+    changelog: core.getInput("changelog")
   };
 
   try {

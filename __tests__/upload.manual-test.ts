@@ -21,9 +21,10 @@ async function test() {
         fileSize: `${fileStats.size / (1024 * 1000)} MB`,
 
         mcVersion: process.env.DISCORD_UPLOAD_mcVersion,
-        forgeVersion: process.env.DISCORD_UPLOAD_forgeVersion
+        forgeVersion: process.env.DISCORD_UPLOAD_forgeVersion,
+        changelog: process.env.DISCORD_UPLOAD_changelog
     };
-
+    console.debug(`Changelog is ${meta.changelog}`)
     try {
         console.debug(`Sending information about file ${filename} ...`);
 

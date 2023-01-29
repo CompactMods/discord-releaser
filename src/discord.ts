@@ -1,7 +1,7 @@
 import {
     Client, EmbedBuilder, Events, GatewayIntentBits,
     Channel, BaseGuildTextChannel,
-    bold, inlineCode
+    bold, inlineCode, AttachmentBuilder
 } from "discord.js";
 
 export class ModFileMetadata {
@@ -11,6 +11,8 @@ export class ModFileMetadata {
 
     public mcVersion?: string;
     public forgeVersion?: string;
+
+    public changelog?: string
 }
 
 export class DiscordModFileUploader {
@@ -66,6 +68,11 @@ export class DiscordModFileUploader {
 
             if (this.modThumbnail)
                 payload = payload.setThumbnail(this.modThumbnail)
+            const uploadChangelog = this.modMetadata.changelog? this.modMetadata.changelog.length > 1000 : false
+            if(this.modMetadata.changelog){
+                if(!uploadChangelog)
+                    payload=payload.setDescription(`${this.modMetadata.changelog}\nFilename: ${inlineCode(this.filename)}\nFilesize: ${bold(this.modMetadata.fileSize)}`)
+            }
 
             // Yeet
             await target.send({
@@ -73,6 +80,15 @@ export class DiscordModFileUploader {
                 embeds: [payload],
                 files: [this.filename]
             });
+
+            if(uploadChangelog) {
+                var attachment = new AttachmentBuilder(Buffer.from(this.modMetadata.changelog!, 'utf-8'));
+                attachment = attachment.setName("CHANGELOG.md");
+
+                await target.send({
+                    files: [attachment]
+                });
+            }
 
         }
 

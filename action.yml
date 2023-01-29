@@ -29,6 +29,9 @@ inputs:
   forgeVersion:
     required: false
     description: 'If set, shows a Forge version requirement in the metadata area'
+  changelog:
+    required: false
+    description: 'If set, shows a changelog in the embed. If over 1000 characters, it attaches as a file.'
 runs:
   using: 'node16'
   main: 'dist/index.js'
