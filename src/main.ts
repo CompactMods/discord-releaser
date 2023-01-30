@@ -23,7 +23,8 @@ async function run(): Promise<void> {
     fileSize: `${fileSize} MB`,
 
     mcVersion: core.getInput("mcVersion"),
-    forgeVersion: core.getInput("forgeVersion")
+    forgeVersion: core.getInput("forgeVersion"),
+    changelog: core.getInput("changelog")
   };
 
   try {
@@ -31,7 +32,8 @@ async function run(): Promise<void> {
 
     var uploader = DiscordModFileUploader.forFile(filename)
       .channel(channelId)
-      .metadata(meta);
+      .metadata(meta)
+      .emotes(core.getInput("forge_emote"),core.getInput("mc_emote"));
 
     if (thumbnail)
       uploader = uploader.thumbnail(thumbnail);

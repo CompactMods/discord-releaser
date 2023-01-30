@@ -12,4 +12,5 @@ with:
   # Optional Metadata
   mcVersion: 1.19.3
   forgeVersion: 44.1.0
+  changelog: Changes made 
 ```

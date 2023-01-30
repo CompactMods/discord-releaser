@@ -34,6 +34,7 @@ class DiscordModFileUploader {
         });
     }
     onConnected() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             // Get Target Channel
             if (!this.targetChannelId)
@@ -48,11 +49,11 @@ class DiscordModFileUploader {
                 // Emoji
                 let embedMeta = [];
                 if (this.modMetadata.mcVersion) {
-                    let grass = this.client.emojis.cache.get("1063420847085322252");
+                    let grass = this.client.emojis.cache.get((_a = this.mc_emote) !== null && _a !== void 0 ? _a : "1063420847085322252");
                     embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
                 }
                 if (this.modMetadata.forgeVersion) {
-                    let forge = this.client.emojis.cache.get("1041688944586268683");
+                    let forge = this.client.emojis.cache.get((_b = this.forge_emote) !== null && _b !== void 0 ? _b : "1041688944586268683");
                     embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
                 }
                 // Build embed
@@ -64,12 +65,24 @@ class DiscordModFileUploader {
                     payload = payload.addFields({ name: '\u200b', value: embedMeta.join("\n") });
                 if (this.modThumbnail)
                     payload = payload.setThumbnail(this.modThumbnail);
+                const uploadChangelog = this.modMetadata.changelog ? this.modMetadata.changelog.length > 1000 : false;
+                if (this.modMetadata.changelog) {
+                    if (!uploadChangelog)
+                        payload = payload.setDescription(`${this.modMetadata.changelog}\nFilename: ${(0, discord_js_1.inlineCode)(this.filename)}\nFilesize: ${(0, discord_js_1.bold)(this.modMetadata.fileSize)}`);
+                }
                 // Yeet
                 yield target.send({
                     content: (0, discord_js_1.bold)(`New Version Available: ${this.modMetadata.modName} v${this.modMetadata.modVersion}`),
                     embeds: [payload],
                     files: [this.filename]
                 });
+                if (uploadChangelog) {
+                    var attachment = new discord_js_1.AttachmentBuilder(Buffer.from(this.modMetadata.changelog, 'utf-8'));
+                    attachment = attachment.setName("CHANGELOG.md");
+                    yield target.send({
+                        files: [attachment]
+                    });
+                }
             }
             catch (err) {
                 console.error(err);
@@ -90,6 +103,11 @@ class DiscordModFileUploader {
     }
     thumbnail(thumbnail) {
         this.modThumbnail = thumbnail;
+        return this;
+    }
+    emotes(forge, minecraft) {
+        this.forge_emote = forge;
+        this.mc_emote = minecraft;
         return this;
     }
     send(token) {
@@ -165,13 +183,15 @@ function run() {
             modVersion: core.getInput("modVersion", { required: true }),
             fileSize: `${fileSize} MB`,
             mcVersion: core.getInput("mcVersion"),
-            forgeVersion: core.getInput("forgeVersion")
+            forgeVersion: core.getInput("forgeVersion"),
+            changelog: core.getInput("changelog")
         };
         try {
             core.debug(`Sending information about file ${filename} to ${channelId} ...`);
             var uploader = discord_1.DiscordModFileUploader.forFile(filename)
                 .channel(channelId)
-                .metadata(meta);
+                .metadata(meta)
+                .emotes(core.getInput("forge_emote"), core.getInput("mc_emote"));
             if (thumbnail)
                 uploader = uploader.thumbnail(thumbnail);
             yield uploader.send(process.env.DISCORD_BOT_TOKEN);

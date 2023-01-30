@@ -1,7 +1,7 @@
 import {
     Client, EmbedBuilder, Events, GatewayIntentBits,
     Channel, BaseGuildTextChannel,
-    bold, inlineCode
+    bold, inlineCode, AttachmentBuilder
 } from "discord.js";
 
 export class ModFileMetadata {
@@ -11,12 +11,17 @@ export class ModFileMetadata {
 
     public mcVersion?: string;
     public forgeVersion?: string;
+
+    public changelog?: string
 }
 
 export class DiscordModFileUploader {
 
     public modMetadata?: ModFileMetadata;
     public modThumbnail?: string;
+
+    public forge_emote?: string;
+    public mc_emote?: string;
 
     private client: Client;
     private targetChannelId?: string;
@@ -27,6 +32,7 @@ export class DiscordModFileUploader {
             intents: [GatewayIntentBits.Guilds]
         });
     }
+
 
     private async onConnected() {
         // Get Target Channel
@@ -46,12 +52,12 @@ export class DiscordModFileUploader {
             // Emoji
             let embedMeta: string[] = [];
             if (this.modMetadata.mcVersion) {
-                let grass = this.client.emojis.cache.get("1063420847085322252");
+                let grass = this.client.emojis.cache.get(this.mc_emote ?? "1063420847085322252");
                 embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
             }
 
             if (this.modMetadata.forgeVersion) {
-                let forge = this.client.emojis.cache.get("1041688944586268683");
+                let forge = this.client.emojis.cache.get(this.forge_emote ?? "1041688944586268683");
                 embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
             }
 
@@ -66,6 +72,11 @@ export class DiscordModFileUploader {
 
             if (this.modThumbnail)
                 payload = payload.setThumbnail(this.modThumbnail)
+            const uploadChangelog = this.modMetadata.changelog? this.modMetadata.changelog.length > 1000 : false
+            if(this.modMetadata.changelog){
+                if(!uploadChangelog)
+                    payload=payload.setDescription(`${this.modMetadata.changelog}\nFilename: ${inlineCode(this.filename)}\nFilesize: ${bold(this.modMetadata.fileSize)}`)
+            }
 
             // Yeet
             await target.send({
@@ -73,6 +84,15 @@ export class DiscordModFileUploader {
                 embeds: [payload],
                 files: [this.filename]
             });
+
+            if(uploadChangelog) {
+                var attachment = new AttachmentBuilder(Buffer.from(this.modMetadata.changelog!, 'utf-8'));
+                attachment = attachment.setName("CHANGELOG.md");
+
+                await target.send({
+                    files: [attachment]
+                });
+            }
 
         }
 
@@ -99,6 +119,12 @@ export class DiscordModFileUploader {
 
     public thumbnail(thumbnail: string): DiscordModFileUploader {
         this.modThumbnail = thumbnail;
+        return this;
+    }
+
+    public emotes(forge: string, minecraft: string) {
+        this.forge_emote=forge;
+        this.mc_emote = minecraft;
         return this;
     }
 
