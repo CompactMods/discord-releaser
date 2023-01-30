@@ -6,29 +6,6 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -41,7 +18,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DiscordModFileUploader = exports.ModFileMetadata = void 0;
 const discord_js_1 = __nccwpck_require__(85973);
-const core = __importStar(__nccwpck_require__(42186));
 class ModFileMetadata {
     constructor() {
         this.modName = "Test Mod";
@@ -58,6 +34,7 @@ class DiscordModFileUploader {
         });
     }
     onConnected() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             // Get Target Channel
             if (!this.targetChannelId)
@@ -72,11 +49,11 @@ class DiscordModFileUploader {
                 // Emoji
                 let embedMeta = [];
                 if (this.modMetadata.mcVersion) {
-                    let grass = this.client.emojis.cache.get(core.getInput("mc_emote"));
+                    let grass = this.client.emojis.cache.get((_a = this.mc_emote) !== null && _a !== void 0 ? _a : "1063420847085322252");
                     embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
                 }
                 if (this.modMetadata.forgeVersion) {
-                    let forge = this.client.emojis.cache.get(core.getInput("forge_emote"));
+                    let forge = this.client.emojis.cache.get((_b = this.forge_emote) !== null && _b !== void 0 ? _b : "1041688944586268683");
                     embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
                 }
                 // Build embed
@@ -126,6 +103,11 @@ class DiscordModFileUploader {
     }
     thumbnail(thumbnail) {
         this.modThumbnail = thumbnail;
+        return this;
+    }
+    emotes(forge, minecraft) {
+        this.forge_emote = forge;
+        this.mc_emote = minecraft;
         return this;
     }
     send(token) {
@@ -208,7 +190,8 @@ function run() {
             core.debug(`Sending information about file ${filename} to ${channelId} ...`);
             var uploader = discord_1.DiscordModFileUploader.forFile(filename)
                 .channel(channelId)
-                .metadata(meta);
+                .metadata(meta)
+                .emotes(core.getInput("forge_emote"), core.getInput("mc_emote"));
             if (thumbnail)
                 uploader = uploader.thumbnail(thumbnail);
             yield uploader.send(process.env.DISCORD_BOT_TOKEN);

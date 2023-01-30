@@ -3,7 +3,6 @@ import {
     Channel, BaseGuildTextChannel,
     bold, inlineCode, AttachmentBuilder
 } from "discord.js";
-import * as core from '@actions/core'
 
 export class ModFileMetadata {
     public modName = "Test Mod";
@@ -21,6 +20,9 @@ export class DiscordModFileUploader {
     public modMetadata?: ModFileMetadata;
     public modThumbnail?: string;
 
+    public forge_emote?: string;
+    public mc_emote?: string;
+
     private client: Client;
     private targetChannelId?: string;
     private targetChannel?: Channel;
@@ -30,6 +32,7 @@ export class DiscordModFileUploader {
             intents: [GatewayIntentBits.Guilds]
         });
     }
+
 
     private async onConnected() {
         // Get Target Channel
@@ -49,12 +52,12 @@ export class DiscordModFileUploader {
             // Emoji
             let embedMeta: string[] = [];
             if (this.modMetadata.mcVersion) {
-                let grass = this.client.emojis.cache.get(core.getInput("mc_emote"));
+                let grass = this.client.emojis.cache.get(this.mc_emote ?? "1063420847085322252");
                 embedMeta.push(`${grass} - ${this.modMetadata.mcVersion}`);
             }
 
             if (this.modMetadata.forgeVersion) {
-                let forge = this.client.emojis.cache.get(core.getInput("forge_emote"));
+                let forge = this.client.emojis.cache.get(this.forge_emote ?? "1041688944586268683");
                 embedMeta.push(`${forge} - ${this.modMetadata.forgeVersion}`);
             }
 
@@ -116,6 +119,12 @@ export class DiscordModFileUploader {
 
     public thumbnail(thumbnail: string): DiscordModFileUploader {
         this.modThumbnail = thumbnail;
+        return this;
+    }
+
+    public emotes(forge: string, minecraft: string) {
+        this.forge_emote=forge;
+        this.mc_emote = minecraft;
         return this;
     }
 
